@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EMS Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- SIDEBAR FRAME -->
+    <div class="sidebar">
+        <h4>EMS Cloud</h4>
+        <hr>
+        <a href="#" class="nav-link active">🏠 Home</a>
+        <a href="#" class="nav-link">📅 Events</a>
+        <a href="#" id="btnLogout" class="nav-link text-danger" style="margin-top: 50vh;">Logout</a>
+    </div>
+
+    <!-- MAIN CONTENT FRAME -->
+    <div class="main-content">
+        <h2 id="welcome">Welcome</h2>
+        <hr>
+
+        <!-- ORGANIZER ONLY: Add Event -->
+        <div id="orgSection" class="card p-4 mb-4 hidden">
+            <h4>Create New Event</h4>
+            <div class="row g-2">
+                <div class="col-md-5"><input type="text" id="evTitle" class="form-control" placeholder="Event Name"></div>
+                <div class="col-md-4"><input type="date" id="evDate" class="form-control"></div>
+                <div class="col-md-3"><button id="btnPost" class="btn btn-success w-100">Post Event</button></div>
+            </div>
+        </div>
+
+        <h4>All Events</h4>
+        <div id="eventList" class="row"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbQklWo-Sei43hBDraYtJkWJsQwQpaOQc",
+            authDomain: "test1234-3d90f.firebaseapp.com",
+            projectId: "test1234-3d90f",
+            storageBucket: "test1234-3d90f.firebasestorage.app",
+            messagingSenderId: "408863377899",
+            appId: "1:408863377899:web:15abd18c203138dac8b1ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const role = localStorage.getItem('userRole');
+
+        if(role === 'organizer') document.getElementById('orgSection').classList.remove('hidden');
+        document.getElementById('welcome').innerText = `Role: ${role.toUpperCase()}`;
+
+        // Create Event
+        document.getElementById('btnPost').onclick = async () => {
+            const title = document.getElementById('evTitle').value;
+            const date = document.getElementById('evDate').value;
+            await addDoc(collection(db, "events"), { title, date });
+            alert("Event Published!");
+        };
+
+        // Real-time Event List
+        onSnapshot(collection(db, "events"), (snapshot) => {
+            const list = document.getElementById('eventList');
+            list.innerHTML = "";
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                list.innerHTML += `
+                    <div class="col-md-4 mb-3">
+                        <div class="card p-3">
+                            <h5>${data.title}</h5>
+                            <p class="text-muted">Date: ${data.date}</p>
+                            <button class="btn btn-sm btn-outline-primary" onclick="alert('Registered!')">Join</button>
+                        </div>
+                    </div>`;
+            });
+        });
+
+        document.getElementById('btnLogout').onclick = () => { window.location.href="index.html"; };
+    </script>
+</body>
+</html>
